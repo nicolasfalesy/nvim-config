@@ -63,7 +63,8 @@ check_build_tools() {
 
 install_node_via_nvm() {
   info "Installing nvm (Node Version Manager)..."
-  export NVM_DIR="$HOME/.nvm"
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"    # respect existing value, default to ~/.nvm
+  mkdir -p "$NVM_DIR"                         # ensure the directory actually exists
   curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
   # shellcheck source=/dev/null
