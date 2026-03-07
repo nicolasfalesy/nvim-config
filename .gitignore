@@ -1,0 +1,7 @@
+# Ignore swap/undo files that may end up here
+*.swp
+*.swo
+*~
+
+# Local overrides (not tracked)
+lua/local.lua
