@@ -21,7 +21,21 @@ opt.shiftwidth = 2
 opt.expandtab = true
 opt.smartindent = true
 
-opt.clipboard = "unnamedplus"
+-- Clipboard: OSC 52 lets yanks work over SSH (requires terminal support)
+-- Windows Terminal: enable "experimental.OSC52Clipboard" in settings.json
+-- For local machines with a display server, this still works transparently
+vim.g.clipboard = {
+  name = 'OSC 52',
+  copy = {
+    ['+'] = require('vim.ui.clipboard.osc52').copy('+'),
+    ['*'] = require('vim.ui.clipboard.osc52').copy('*'),
+  },
+  paste = {
+    ['+'] = require('vim.ui.clipboard.osc52').paste('+'),
+    ['*'] = require('vim.ui.clipboard.osc52').paste('*'),
+  },
+}
+opt.clipboard = 'unnamedplus'
 
 -- Keybindings
 --vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move line down" })
@@ -60,9 +74,15 @@ require("lazy").setup({
 vim.cmd.colorscheme "catppuccin-mocha"
 
 -- Treesitter configuration
-require'nvim-treesitter.config'.setup {
+-- On headless servers (e.g. TrueNAS), gcc may not be available.
+-- Install zig as a standalone C compiler and treesitter will use it:
+--   curl -LO https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz
+--   tar xf zig-linux-x86_64-0.11.0.tar.xz && add to PATH
+require('nvim-treesitter.install').compilers = { 'gcc', 'zig cc', 'cc', 'clang' }
+require('nvim-treesitter.configs').setup {
   ensure_installed = { "c", "toml", "lua", "python", "javascript", "bash", "dockerfile", "yaml" },
   highlight = { enable = true },
+  auto_install = false,
 }
 
 -- Mason & LSP Setup
