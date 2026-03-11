@@ -51,11 +51,24 @@ check_build_tools() {
   command -v gcc &>/dev/null  || missing+=("gcc")
 
   if [ ${#missing[@]} -gt 0 ]; then
-    warn "Missing build tools: ${missing[*]}"
-    warn "Treesitter parsers won't compile without them."
-    warn "Install with:  sudo apt install build-essential   (Debian/Ubuntu)"
-    warn "               sudo dnf install gcc make           (Fedora)"
-    warn "               brew install gcc make               (macOS)"
+    # Check for zig as a fallback compiler (useful on TrueNAS, NixOS, etc.)
+    if command -v zig &>/dev/null; then
+      success "Build tools — zig cc ($(zig cc --version 2>&1 | head -1))"
+      info "  gcc/make not found, but zig is available as a fallback C compiler."
+      info "  Treesitter is configured to use 'zig cc' automatically."
+    else
+      warn "Missing build tools: ${missing[*]}"
+      warn "Treesitter parsers won't compile without them."
+      warn "Install with:  sudo apt install build-essential   (Debian/Ubuntu)"
+      warn "               sudo dnf install gcc make           (Fedora)"
+      warn "               brew install gcc make               (macOS)"
+      warn ""
+      warn "On headless/appliance systems (TrueNAS, etc.) where apt is locked:"
+      warn "  Download zig as a standalone C compiler (no install needed):"
+      warn "    curl -LO https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz"
+      warn "    tar xf zig-linux-x86_64-0.11.0.tar.xz"
+      warn "    export PATH=\"\$HOME/zig-linux-x86_64-0.11.0:\$PATH\""
+    fi
   else
     success "Build tools — gcc $(gcc --version | grep -oP '\d+\.\d+\.\d+' | head -1), make $(make --version | grep -oP '\d+\.\d+' | head -1)"
   fi
